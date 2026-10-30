@@ -20,8 +20,9 @@ def linha(v):
     e = html.escape
     nova = " <span class=tag>nova hoje</span>" if v["vista_em"] == hoje else ""
     obs = f"<div class=obs>{e(v['obs'])}</div>" if v.get("obs") else ""
+    salario = f" · <b class=sal>{e(v['salario'])}</b>" if v.get("salario") else " · salário não informado"
     return (f"<tr><td class=nota>{v['nota']}</td><td><a href='{e(v['url'])}' target=_blank>{e(v['titulo'])}</a>{nova}"
-            f"<div class=sub>{e(v['empresa'] or v['fonte'])} · {e(v['local'])} · publicada {e(v['publicada'])}</div>"
+            f"<div class=sub>{e(v['empresa'] or v['fonte'])} · {e(v['local'])} · publicada {e(v['publicada'])}{salario}</div>"
             f"<div class=sub>{e(' · '.join(v['motivos']))}</div>{obs}</td><td>{e(v['candidatura'])}</td></tr>")
 
 
@@ -44,7 +45,7 @@ h1{{margin:0}} h2{{margin-top:32px;font-size:18px}} small,.sub{{color:var(--mut)
 table{{width:100%;border-collapse:collapse}} td{{border-top:1px solid var(--line);padding:10px 8px;vertical-align:top}}
 td.nota{{font-weight:700;color:var(--acc);width:40px}} a{{color:var(--fg);font-weight:600}}
 .tag{{background:var(--tag);color:var(--acc);font-size:11px;padding:1px 6px;border-radius:8px;margin-left:6px}}
-.obs{{font-size:13px;margin-top:4px}}
+.obs{{font-size:13px;margin-top:4px}} .sal{{color:var(--acc)}}
 </style></head><body><h1>Relatório de vagas</h1><div class=sub>{datetime.now():%d/%m/%Y %H:%M} · estágio, júnior e trainee · backend, engenharia de dados, QA</div>
 <div class=kpis><div><b>{novas}</b>novas hoje</div><div><b>{enviadas}</b>candidaturas enviadas</div><div><b>{len(vagas)}</b>vagas no histórico</div></div>
 {''.join(secoes)}</body></html>"""

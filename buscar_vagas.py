@@ -117,10 +117,35 @@ def buscar_github(repo="backend-br/vagas"):
     return vagas
 
 
+SALARIO = re.compile(
+    r"(sal[aá]rio|bolsa(?:[- ]aux[ií]lio)?|remunera[çc][ãa]o|faixa salarial)[^\n]{0,60}?"
+    r"(R\$\s?\d[\d.]*(?:,\d{2})?(?:\s?(?:a|até|-)\s?R?\$?\s?\d[\d.]*(?:,\d{2})?)?)", re.I)
+
+
+def extrair_salario(texto):
+    m = SALARIO.search(texto or "")
+    return re.sub(r"\s+", " ", m.group(2)).strip() if m else ""
+
+
+def gupy_aberta(url):
+    """A API lista também vagas fechadas; a página da vaga traz o status real."""
+    try:
+        req = urllib.request.Request(url, headers=UA)
+        with urllib.request.urlopen(req, timeout=30) as r:
+            html = r.read().decode("utf-8", "ignore")
+    except Exception:
+        return False  # página fora do ar = empresa inativa ou vaga removida
+    m = re.search(r'"status":"(\w+)"', html)
+    return m is None or m.group(1) == "published"
+
+
 def pontuar(v):
     titulo = norm(v["titulo"])
     texto = titulo + " " + norm(v["descricao"])
     motivos = []
+    # o que vale é a vaga ainda aceitar candidaturas, não a data de publicação
+    if v["prazo"] and v["prazo"] < datetime.now().strftime("%Y-%m-%d"):
+        return None, ["inscrições encerradas"]
     if NIVEL_RUIM.search(titulo) or not (NIVEL.search(titulo) or re.search(r"\b(estagi\w*|junior|trainee)\b", texto[:600])):
         return None, ["nível fora do alvo"]
     if FORA.search(titulo):
@@ -160,8 +185,6 @@ def pontuar(v):
         dias = (datetime.now(timezone.utc).date() - datetime.fromisoformat(v["publicada"]).date()).days
         if dias <= 7:
             nota += 10; motivos.append(f"publicada há {dias}d")
-        elif dias > 45:
-            nota -= 15; motivos.append(f"antiga ({dias}d)")
     except ValueError:
         pass
     return max(0, min(100, nota)), motivos
@@ -174,14 +197,27 @@ def main():
     descartes = {}
     for vid, v in novas.items():
         nota, motivos = pontuar(v)
+        if nota is not None and v["fonte"] == "Gupy" and not gupy_aberta(v["url"]):
+            nota, motivos = None, ["inscrições encerradas"]
+            if v["id"] in hist and hist[v["id"]]["status"] == "nova":
+                hist[v["id"]]["status"] = "descartada"
+                hist[v["id"]]["obs"] = "Inscrições encerradas."
         if nota is None:
             descartes[motivos[0]] = descartes.get(motivos[0], 0) + 1
             continue
+        v["salario"] = extrair_salario(v["descricao"])
         v["descricao"] = v["descricao"][:1500]
         v["nota"], v["motivos"] = nota, motivos
         if v["id"] in hist:
-            v["status"] = hist[v["id"]].get("status", "nova")
-            v["vista_em"] = hist[v["id"]].get("vista_em", hoje)
+            antigo = hist[v["id"]]
+            v["status"] = antigo.get("status", "nova")
+            v["vista_em"] = antigo.get("vista_em", hoje)
+            v["salario"] = v["salario"] or antigo.get("salario", "")
+            for campo in ("obs", "atualizado_em", "url_candidatura"):
+                if campo in antigo:
+                    v[campo] = antigo[campo]
+            if "url_candidatura" in antigo:
+                v["candidatura"] = antigo["candidatura"]
         else:
             v["status"], v["vista_em"] = "nova", hoje
         hist[v["id"]] = v

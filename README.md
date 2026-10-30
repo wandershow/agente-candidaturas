@@ -25,9 +25,9 @@ Construí este projeto para a minha própria busca por emprego na transição de
 ```
 
 ### Pontuação (`buscar_vagas.py`)
-- **Descarta** por nível (pleno, sênior, especialista), por área fora do alvo (suporte, vendas, frontend, mobile…) e vagas presenciais longe da minha cidade.
+- **Descarta** vagas com inscrições encerradas, por nível (pleno, sênior, especialista), por área fora do alvo (suporte, vendas, frontend, mobile…) e vagas presenciais longe da minha cidade.
 - **Soma pontos** por stack compatível (Python, SQL, AWS, Java, Docker, pytest, Playwright…), trilha-alvo, trabalho remoto, uso de IA, vaga recente e vagas que valorizam inglês, atendimento ao cliente ou transição de carreira.
-- **Tira pontos** por tecnologias exigidas que ainda não domino e por vagas antigas.
+- **Tira pontos** por tecnologias exigidas que ainda não domino.
 
 ### O agente (`agente/rotina-diaria.md`)
 É o prompt da tarefa agendada no Claude Code, que roda todo dia. Ele:
@@ -44,6 +44,7 @@ Construí este projeto para a minha própria busca por emprego na transição de
 | `buscar_vagas.py` | Coleta (Gupy + GitHub), filtra, pontua e salva em `vagas.json` |
 | `marcar.py` | `python marcar.py <id> <status> "<obs>"` |
 | `gerar_relatorio.py` | Gera `relatorio.html` (tema claro/escuro, responsivo) |
+| `publicar_github.py` | Commit + push das melhorias, abortando se achar dado pessoal |
 | `agente/rotina-diaria.md` | Prompt do agente agendado |
 | `exemplos/` | Modelos de `perfil-base.md` e `respostas-padrao.md` |
 
