@@ -84,6 +84,96 @@ def buscar_gupy():
     return vagas
 
 
+TERMOS_LINKEDIN = [
+    "estagio desenvolvimento", "estagio python", "estagio java", "estagio dados",
+    "estagio qa", "desenvolvedor python", "desenvolvedor java", "desenvolvedor backend",
+    "engenheiro de dados", "analista de testes", "qa", "trainee tecnologia",
+]
+LI_BUSCAS = [  # Brasil remoto + região de Rio Grande/Pelotas (50 milhas) em qualquer modelo
+    {"geoId": "106057199", "f_WT": "2"},
+    {"location": "Rio Grande, Rio Grande do Sul, Brasil", "distance": "50"},
+]
+LI_NIVEL = {"Internship": "estágio", "Entry level": "júnior", "Associate": "júnior"}
+# a API pública ignora o f_WT e a página da vaga não traz o modelo: só o texto diz se é remoto
+LI_HIBRIDO = re.compile(r"\bhibrid[oa]s?\b|\bhybrid\b")
+LI_REMOTO = re.compile(r"\bremot[oa]s?\b|\bremote\b|home ?office|work from home")
+LI_PRESENCIAL = re.compile(r"\bpresencia(l|is)\b|\bon-?site\b")
+
+
+def get_html(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return r.read().decode("utf-8", "ignore")
+
+
+def texto_html(trecho):
+    import html as h
+    return re.sub(r"\s+", " ", h.unescape(re.sub(r"<[^>]+>", " ", trecho or ""))).strip()
+
+
+def buscar_linkedin(ja_vistas):
+    """Usa as páginas públicas de vagas do LinkedIn (sem login). f_E=1,2: estágio e assistente/júnior."""
+    cards = {}
+    for termo in TERMOS_LINKEDIN:
+        for filtro in LI_BUSCAS:
+            url = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?" + urllib.parse.urlencode(
+                {"keywords": termo, "f_E": "1,2", **filtro, "start": 0})
+            try:
+                pagina = get_html(url)
+            except Exception as e:
+                print(f"[linkedin] falha em '{termo}': {e}", file=sys.stderr)
+                continue
+            for bloco in pagina.split("<li>")[1:]:
+                m = re.search(r"jobPosting:(\d+)", bloco)
+                if not m or f"li-{m.group(1)}" in ja_vistas or m.group(1) in cards:
+                    continue  # já vista, ou já veio da busca remota (que tem prioridade)
+                cards[m.group(1)] = {
+                    "titulo": texto_html(re.search(r'base-search-card__title">(.*?)</h3>', bloco, re.S).group(1)),
+                    "empresa": texto_html((re.search(r'base-search-card__subtitle">(.*?)</h4>', bloco, re.S) or [None, ""])[1]),
+                    "local": texto_html((re.search(r'job-search-card__location">(.*?)</span>', bloco, re.S) or [None, ""])[1]),
+                    "publicada": (re.search(r'datetime="([\d-]+)"', bloco) or [None, ""])[1],
+                }
+            time.sleep(1)
+
+    vagas = {}
+    for jid, c in cards.items():
+        t = norm(c["titulo"])
+        if NIVEL_RUIM.search(t) or FORA.search(t) or not (any(re.search(rx, t) for rx in TRILHAS.values()) or TI_GERAL.search(t)):
+            continue  # nem vale buscar o detalhe
+        try:
+            det = get_html(f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{jid}")
+        except Exception:
+            continue
+        time.sleep(1)
+        if re.search(r"No longer accepting applications|Não aceita mais candidaturas", det):
+            continue
+        descricao = texto_html((re.search(r'show-more-less-html__markup[^>]*>(.*?)</div>', det, re.S) or [None, ""])[1])
+        nivel = texto_html((re.search(r"Seniority level</h3>\s*<span[^>]*>(.*?)</span>", det, re.S) or [None, ""])[1])
+        externa = "offsite-apply" in det
+        cidade = c["local"].split(",")[0].strip()
+        sobre = norm(c["titulo"] + " " + c["local"] + " " + descricao)
+        # híbrido primeiro: vaga híbrida costuma citar os dias "remotos"; sem pista nenhuma, fica a confirmar
+        modelo = ("hybrid" if LI_HIBRIDO.search(sobre) else "remote" if LI_REMOTO.search(sobre)
+                  else "on-site" if LI_PRESENCIAL.search(sobre) else "")
+        vagas[f"li-{jid}"] = {
+            "id": f"li-{jid}",
+            "fonte": "LinkedIn",
+            "titulo": c["titulo"],
+            "empresa": c["empresa"],
+            "local": {"remote": "Remoto", "hybrid": f"Híbrido em {c['local']}", "on-site": c["local"]}.get(
+                modelo, f"{c['local']} (modelo a confirmar)"),
+            "modelo": modelo,
+            "estado": "", "cidade": cidade,
+            "publicada": c["publicada"],
+            "prazo": "",
+            "url": f"https://www.linkedin.com/jobs/view/{jid}/",
+            # o nível do LinkedIn entra no começo do texto para o pontuar() reconhecer
+            "descricao": f"Nível: {LI_NIVEL.get(nivel, nivel)}. " + descricao,
+            "candidatura": "LinkedIn (site externo)" if externa else "LinkedIn (candidatura simplificada)",
+        }
+    return vagas
+
+
 def buscar_github(repo="backend-br/vagas"):
     vagas = {}
     for label in ["Júnior", "Estagiário"]:
@@ -193,7 +283,7 @@ def pontuar(v):
 def main():
     hist = json.loads(ARQUIVO.read_text(encoding="utf-8")) if ARQUIVO.exists() else {}
     hoje = datetime.now().strftime("%Y-%m-%d")
-    novas = {**buscar_gupy(), **buscar_github()}
+    novas = {**buscar_gupy(), **buscar_github(), **buscar_linkedin(hist)}
     descartes = {}
     for vid, v in novas.items():
         nota, motivos = pontuar(v)
