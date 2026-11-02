@@ -1,4 +1,4 @@
-"""Busca vagas de estágio/júnior/trainee em backend, engenharia de dados e QA,
+"""Busca vagas de estágio/júnior/trainee em backend, engenharia de dados, QA, IA e cloud,
 pontua contra o perfil-base e salva em vagas.json (acumulando histórico)."""
 import json
 import re
@@ -22,6 +22,10 @@ TERMOS_GUPY = [
     "desenvolvedor java", "python junior", "java junior", "backend junior",
     "engenheiro de dados", "engenharia de dados", "qa junior", "analista de testes",
     "analista qa", "trainee tecnologia", "trainee ti", "trainee dados",
+    "estagio ia", "estagio machine learning", "inteligencia artificial junior",
+    "desenvolvedor ia", "engenheiro de ia", "machine learning junior",
+    "estagio cloud", "estagio aws", "estagio devops", "cloud junior",
+    "analista cloud", "engenheiro cloud", "devops junior",
 ]
 
 NIVEL = re.compile(r"\b(estagi\w*|junior|jr\.?|trainee|aprendiz\w*|nivel i|i)\b")
@@ -30,13 +34,24 @@ TRILHAS = {
     "backend": r"back[- ]?end|desenvolvedor|developer|programador|software|python|java\b|api",
     "dados": r"engenh\w* de dados|data engineer|\betl\b|pipeline|dados",
     "qa": r"\bqa\b|qualidade de software|testes?\b|tester|quality",
+    "ia": r"intelig\w* artificial|\bia\b|\bai\b|machine learning|\bml\b|\bllms?\b|genai|ia generativa|ciencia de dados|data scien\w*|\bmlops\b",
+    "cloud": r"\bcloud\b|\bnuvem\b|\baws\b|\bazure\b|\bgcp\b|google cloud|devops|\bsre\b",
 }
 CIDADES_PERTO = {"rio grande", "pelotas", "sao jose do norte", "capao do leao", "santa vitoria do palmar"}
 TI_GERAL = re.compile(r"\bti\b|tecnologia|intelig\w* artificial|\bia\b|desenvolvimento( e aplicacoes| de integracoes| de software|\s*$|\s*-)")
-FORA = re.compile(r"front[- ]?end|mobile|android|\bios\b|\.net|c#|php|ruby|delphi|sap\b|suporte|help ?desk|service ?desk|infraestrutura|pre[- ]?vendas?|comercial|vendas|marketing|contab|juridic|rh\b|design")
+FORA = re.compile(r"front[- ]?end|mobile|android|\bios\b|\.net|c#|php|ruby|delphi|sap\b|suporte|help ?desk|service ?desk|pre[- ]?vendas?|comercial|vendas|marketing|contab|juridic|rh\b|design")
+# infraestrutura tradicional (redes, servidores locais) continua fora; com cloud no título, entra
+INFRA = re.compile(r"infraestrutura|\binfra\b")
+
+
+def fora_do_alvo(t):
+    return bool(FORA.search(t) or (INFRA.search(t) and not re.search(TRILHAS["cloud"], t)))
+
+
 STACK = ["python", "sql", "aws", "java", "linux", "git", "docker", "pytest", "playwright",
          "postgres", "mysql", "spark", "etl", "s3", "lambda", "api", "poo", "orientacao a objetos",
-         "selenium", "automacao", "fastapi"]
+         "selenium", "automacao", "fastapi", "azure", "gcp", "terraform", "pandas", "llm",
+         "langchain"]
 FALTA = ["react", "angular", "vue", "kotlin", "golang", "kubernetes", "c++", "scala", "node"]
 IA = re.compile(r"intelig\w* artificial|\bia\b|\bai\b|\bllm|machine learning|genai|agentes?\b|openai|chatgpt|claude|n8n")
 BONUS = re.compile(r"ingles|english|transicao de carreira|atendimento|cliente|primeiro emprego|sem experiencia")
@@ -88,6 +103,8 @@ TERMOS_LINKEDIN = [
     "estagio desenvolvimento", "estagio python", "estagio java", "estagio dados",
     "estagio qa", "desenvolvedor python", "desenvolvedor java", "desenvolvedor backend",
     "engenheiro de dados", "analista de testes", "qa", "trainee tecnologia",
+    "estagio inteligencia artificial", "desenvolvedor ia", "machine learning junior",
+    "estagio cloud", "cloud junior", "devops junior",
 ]
 LI_BUSCAS = [  # Brasil remoto + região de Rio Grande/Pelotas (50 milhas) em qualquer modelo
     {"geoId": "106057199", "f_WT": "2"},
@@ -138,7 +155,7 @@ def buscar_linkedin(ja_vistas):
     vagas = {}
     for jid, c in cards.items():
         t = norm(c["titulo"])
-        if NIVEL_RUIM.search(t) or FORA.search(t) or not (any(re.search(rx, t) for rx in TRILHAS.values()) or TI_GERAL.search(t)):
+        if NIVEL_RUIM.search(t) or fora_do_alvo(t) or not (any(re.search(rx, t) for rx in TRILHAS.values()) or TI_GERAL.search(t)):
             continue  # nem vale buscar o detalhe
         try:
             det = get_html(f"https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{jid}")
@@ -238,7 +255,7 @@ def pontuar(v):
         return None, ["inscrições encerradas"]
     if NIVEL_RUIM.search(titulo) or not (NIVEL.search(titulo) or re.search(r"\b(estagi\w*|junior|trainee)\b", texto[:600])):
         return None, ["nível fora do alvo"]
-    if FORA.search(titulo):
+    if fora_do_alvo(titulo):
         return None, ["área fora do alvo"]
     trilhas = [t for t, rx in TRILHAS.items() if re.search(rx, titulo)]
     generica = False
@@ -247,7 +264,7 @@ def pontuar(v):
         trilhas = [t for t, rx in TRILHAS.items() if re.search(rx, texto)]
         generica = True
     if not trilhas:
-        return None, ["título não é de backend/dados/QA"]
+        return None, ["título não é de backend/dados/QA/IA/cloud"]
     # local: remoto em qualquer lugar; presencial/híbrido só perto de Rio Grande
     no_rs = norm(v["cidade"]) in CIDADES_PERTO
     if v["modelo"] in ("on-site", "hybrid") and not no_rs:

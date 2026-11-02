@@ -14,19 +14,21 @@ Fonte: currículo (PDF), GitHub público (wandershow). LinkedIn: linkedin.com/in
   1. Backend (Python, Java)
   2. Engenharia de dados (ETL/pipelines, SQL, AWS, Spark)
   3. QA / testes (manual e automatizado: pytest, Playwright)
-  - Em qualquer das três, vagas com uso de IA (LLMs, agentes, automação com IA, MLOps jr) contam como bônus, não como requisito
-  - Fora do alvo: suporte técnico / help desk / service desk, pré-vendas, vendas, BI/analista de negócios, frontend, mobile
+  4. IA (inteligência artificial, machine learning, LLMs, agentes, IA generativa, MLOps jr)
+  5. Cloud (AWS, Azure, GCP, DevOps jr, infraestrutura em nuvem)
+  - Nas trilhas 1 a 3, vagas com uso de IA também ganham bônus
+  - Fora do alvo: suporte técnico / help desk / service desk, infraestrutura tradicional sem nuvem (redes, servidores locais), pré-vendas, vendas, BI/analista de negócios, frontend, mobile
 - **Local:** remoto (Brasil todo) · presencial/híbrido em Rio Grande, Pelotas e região sul do RS
 
 ## Palavras-chave de busca
-estágio backend · estágio desenvolvimento python · estágio java · desenvolvedor backend júnior · desenvolvedor python júnior · desenvolvedor java júnior · estágio engenharia de dados · engenheiro de dados júnior · estágio QA · analista de testes júnior · QA júnior · automação de testes júnior · estágio IA · desenvolvedor python IA júnior · trainee TI
+estágio backend · estágio desenvolvimento python · estágio java · desenvolvedor backend júnior · desenvolvedor python júnior · desenvolvedor java júnior · estágio engenharia de dados · engenheiro de dados júnior · estágio QA · analista de testes júnior · QA júnior · automação de testes júnior · estágio IA · estágio inteligência artificial · desenvolvedor python IA júnior · machine learning júnior · estágio cloud · estágio AWS · analista cloud júnior · DevOps júnior · trainee TI
 
 ## Pontuação (0–100)
 | Critério | Peso |
 |---|---|
 | Nível estágio/jr/trainee (pleno/sênior = descarta) | obrigatório |
 | Stack bate (SQL, Python, AWS, Java, Linux, Git, Docker, pytest, Playwright) | 40 |
-| Trilha alvo (backend, engenharia de dados, QA) | 20 |
+| Trilha alvo (backend, engenharia de dados, QA, IA, cloud) | 20 |
 | Usa IA (LLM, agentes, automação com IA) | +5 |
 | Local (remoto ou RS sul) | 20 |
 | Requisitos que ele não tem (ex.: React, .NET, 2+ anos na área) | −10 cada |

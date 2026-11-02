@@ -2,7 +2,7 @@
 
 Agente de IA que, todo dia, busca vagas de **estágio, júnior e trainee** em TI, pontua cada uma contra o meu perfil, se candidata às que fazem sentido e gera um relatório do dia.
 
-Construí este projeto para a minha própria busca por emprego na transição de carreira para TI (backend, engenharia de dados e QA).
+Construí este projeto para a minha própria busca por emprego na transição de carreira para TI (backend, engenharia de dados, QA, IA e cloud).
 
 ## Como funciona
 
@@ -26,7 +26,7 @@ Construí este projeto para a minha própria busca por emprego na transição de
 
 ### Pontuação (`buscar_vagas.py`)
 - **Descarta** vagas com inscrições encerradas, por nível (pleno, sênior, especialista), por área fora do alvo (suporte, vendas, frontend, mobile…) e vagas presenciais longe da minha cidade.
-- **Soma pontos** por stack compatível (Python, SQL, AWS, Java, Docker, pytest, Playwright…), trilha-alvo, trabalho remoto, uso de IA, vaga recente e vagas que valorizam inglês, atendimento ao cliente ou transição de carreira.
+- **Soma pontos** por stack compatível (Python, SQL, AWS, Java, Docker, pytest, Playwright…), trilha-alvo (backend, dados, QA, IA ou cloud), trabalho remoto, uso de IA, vaga recente e vagas que valorizam inglês, atendimento ao cliente ou transição de carreira.
 - **Tira pontos** por tecnologias exigidas que ainda não domino.
 
 ### O agente (`agente/rotina-diaria.md`)
