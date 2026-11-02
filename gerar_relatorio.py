@@ -13,7 +13,10 @@ GRUPOS = [
     ("Precisam de você", lambda v: v["status"] == "pendente"),
     ("Para candidatar (nota ≥ 60)", lambda v: v["status"] == "nova" and v["nota"] >= 60),
     ("Talvez (nota 40–59)", lambda v: v["status"] == "nova" and 40 <= v["nota"] < 60),
+    ("Abaixo do corte (nota < 40)", lambda v: v["status"] == "nova" and v["nota"] < 40),
+    ("Descartadas", lambda v: v["status"] in ("descartada", "antiga")),
 ]
+RECOLHIDOS = {"Descartadas"}  # seções longas que abrem só ao clicar
 
 
 def linha(v):
@@ -29,9 +32,13 @@ def linha(v):
 secoes = []
 for nome, filtro in GRUPOS:
     lista = sorted((v for v in vagas.values() if filtro(v)), key=lambda v: -v["nota"])
-    if lista:
-        secoes.append(f"<h2>{nome} <small>({len(lista)})</small></h2><table>"
-                      + "".join(linha(v) for v in lista) + "</table>")
+    if not lista:
+        continue
+    tabela = "<table>" + "".join(linha(v) for v in lista) + "</table>"
+    if nome in RECOLHIDOS:
+        secoes.append(f"<details><summary><h2>{nome} <small>({len(lista)})</small></h2></summary>{tabela}</details>")
+    else:
+        secoes.append(f"<h2>{nome} <small>({len(lista)})</small></h2>{tabela}")
 
 novas = sum(v["vista_em"] == hoje for v in vagas.values())
 enviadas = sum(v["status"] == "candidatado" for v in vagas.values())
@@ -46,6 +53,7 @@ table{{width:100%;border-collapse:collapse}} td{{border-top:1px solid var(--line
 td.nota{{font-weight:700;color:var(--acc);width:40px}} a{{color:var(--fg);font-weight:600}}
 .tag{{background:var(--tag);color:var(--acc);font-size:11px;padding:1px 6px;border-radius:8px;margin-left:6px}}
 .obs{{font-size:13px;margin-top:4px}} .sal{{color:var(--acc)}}
+summary{{cursor:pointer}} summary h2{{display:inline}}
 </style></head><body><h1>Relatório de vagas</h1><div class=sub>{datetime.now():%d/%m/%Y %H:%M} · estágio, júnior e trainee · backend, engenharia de dados, QA</div>
 <div class=kpis><div><b>{novas}</b>novas hoje</div><div><b>{enviadas}</b>candidaturas enviadas</div><div><b>{len(vagas)}</b>vagas no histórico</div></div>
 {''.join(secoes)}</body></html>"""
