@@ -36,9 +36,12 @@ def seletor(v):
 def linha(v, com_seletor=True):
     e = html.escape
     nova = " <span class=tag>nova hoje</span>" if v["vista_em"] == hoje else ""
+    feita = v["status"] == "candidatado"
+    if feita:
+        nova += " <span class=tag>✓ candidatura feita</span>"
     obs = f"<div class=obs>{e(v['obs'])}</div>" if v.get("obs") else ""
     salario = f" · <b class=sal>{e(v['salario'])}</b>" if v.get("salario") else " · salário não informado"
-    dec = seletor(v) if com_seletor else ""
+    dec = seletor(v) if com_seletor and not feita else ""  # já enviada: não há o que decidir
     return (f"<tr data-id='{e(v['id'])}'><td class=nota>{v['nota']}</td><td><a href='{e(v['url'])}' target=_blank>{e(v['titulo'])}</a>{nova}"
             f"<div class=sub>{e(v['empresa'] or v['fonte'])} · {e(v['local'])} · publicada {e(v['publicada'])}{salario}</div>"
             f"<div class=sub>{e(' · '.join(v['motivos']))}</div>{obs}<div class=decmsg></div></td><td>{e(v['candidatura'])}{dec}</td></tr>")

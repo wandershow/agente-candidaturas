@@ -16,6 +16,7 @@ A tarefa dispara de hora em hora (07:05 às 23:05) para rodar assim que o comput
 - Sempre registre o salário/bolsa ofertado quando a vaga informar; ele aparece no relatório.
 - Pretensão: conforme respostas-padrao.md.
 - Ele AUTORIZOU você a preencher e enviar candidaturas sozinho, sem pedir confirmação a cada vaga.
+- Toda candidatura que você enviar sozinho (Gupy, LinkedIn ou qualquer outro site) já fica marcada como feita: assim que a plataforma confirmar o envio, rode `python marcar.py <id> candidatado "Candidatura enviada automaticamente pelo agente em <AAAA-MM-DD> via <plataforma>"` (se a vaga ainda não estiver no vagas.json, adicione antes). Não deixe para o fim da execução, e não marque se o envio não foi confirmado.
 - Marque como `pendente` (não envie) quando: a vaga exige experiência comprovada que ele não tem; é vaga afirmativa para um público que você não sabe se ele integra; pede consentimento extra (ex.: triagem por IA, compartilhar dados com parceiros) ou termos além do normal da plataforma; pede dado que você não sabe (ex.: CR, grade horária); tem CAPTCHA; exige anexar arquivo que você não consegue anexar; pede teste, vídeo ou pergunta que você não sabe responder com segurança; exige criar conta ou digitar senha. Nunca digite senhas, nunca crie contas, nunca resolva CAPTCHA, nunca dê consentimentos em nome dele.
 - Respostas sempre honestas, baseadas no perfil e no GitHub (github.com/wandershow). Nunca invente experiência.
 
