@@ -7,7 +7,7 @@ A tarefa dispara de hora em hora (07:05 às 23:05) para rodar assim que o comput
 - `perfil-base.md`: perfil, trilhas-alvo, regra de pontuação, diferenciais, previsão de formatura e qual currículo usar.
 - `respostas-padrao.md`: respostas prontas para perguntas de candidatura e pretensão salarial.
 - `vagas.json`: histórico de todas as vagas (campo `status`: nova, candidatado, pendente, descartada, antiga; campo `salario`: salário/bolsa ofertado, se informado).
-- Scripts: `buscar_vagas.py` (busca automática na Gupy + GitHub backend-br/vagas; as demais fontes são buscadas por você nos passos 5 e 6; pontua, extrai salário e descarta vagas encerradas), `marcar.py <id> <status> "<obs>" [--salario="R$ ..."]` (atualiza status e salário; use `-` como status para manter o atual), `gerar_relatorio.py` (gera relatorio.html, com o salário de cada vaga), `publicar_github.py "<mensagem>"` (publica no GitHub as mudanças nos arquivos versionados, com checagem de dados pessoais).
+- Scripts: `buscar_vagas.py` (busca automática na Gupy, no GitHub backend-br/vagas e no LinkedIn; você complementa o LinkedIn no passo 5 e busca o resto da web no passo 6; pontua, extrai salário e descarta vagas encerradas), `marcar.py <id> <status> "<obs>" [--salario="R$ ..."]` (atualiza status e salário; use `-` como status para manter o atual), `gerar_relatorio.py` (gera relatorio.html, com o salário de cada vaga), `publicar_github.py "<mensagem>"` (publica no GitHub as mudanças nos arquivos versionados, com checagem de dados pessoais).
 
 ## Regras combinadas com o Wanderson
 - Só estágio, júnior ou trainee. Áreas: backend (Python/Java), engenharia de dados, QA, IA e cloud (detalhes das trilhas em perfil-base.md). Nunca suporte técnico, help desk, pré-vendas ou vendas.
